@@ -13,7 +13,10 @@ bot.onText(/\/start/, (msg) => {
         reply_markup: {
             inline_keyboard: [[{
                 text: 'Obuna bo‘lish',
-                url: `https://t.me/+${channelId}`
+                url: `https://t.me/${channelId}`
+            }], [{
+                text: 'Kanalga obunani tekshirish',
+                callback_data: 'check_subscription'
             }]]
         }
     });
@@ -22,21 +25,23 @@ bot.onText(/\/start/, (msg) => {
 bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
 
-    try {
-        const member = await bot.getChatMember(channelId, chatId);
+    if (callbackQuery.data === 'check_subscription') {
+        try {
+            const member = await bot.getChatMember(channelId, chatId);
 
-        if (member.status === 'member' || member.status === 'administrator' || member.status === 'creator') {
-            bot.sendMessage(chatId, 'Siz kanalga muvaffaqiyatli obuna bo‘ldingiz! Videolarni olish uchun quyidagi tugmani bosing:', {
-                reply_markup: {
-                    inline_keyboard: [[{ text: 'Videolarni olish', callback_data: 'get_videos' }]]
-                }
-            });
-        } else {
-            bot.sendMessage(chatId, 'Iltimos, avval kanalga obuna bo‘ling.');
+            if (member.status === 'member' || member.status === 'administrator' || member.status === 'creator') {
+                bot.sendMessage(chatId, 'Siz kanalga muvaffaqiyatli obuna bo‘ldingiz! Videolarni olish uchun quyidagi tugmani bosing:', {
+                    reply_markup: {
+                        inline_keyboard: [[{ text: 'Videolarni olish', callback_data: 'get_videos' }]]
+                    }
+                });
+            } else {
+                bot.sendMessage(chatId, 'Iltimos, avval kanalga obuna bo‘ling.');
+            }
+        } catch (err) {
+            console.error(err);
+            bot.sendMessage(chatId, 'Kanalga obuna bo‘lishni tekshirishda xatolik yuz berdi.');
         }
-    } catch (err) {
-        console.error(err);
-        bot.sendMessage(chatId, 'Kanalga obuna bo‘lishni tekshirishda xatolik yuz berdi.');
     }
 
     if (callbackQuery.data === 'get_videos') {
