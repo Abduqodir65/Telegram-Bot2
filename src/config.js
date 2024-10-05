@@ -1,4 +1,6 @@
+require('dotenv').config();
+
 module.exports = {
     token: process.env.TELEGRAM_TOKEN,
-    channelId: '@your_channel_id', 
+    channelId: process.env.CHANNEL_ID,
 };
