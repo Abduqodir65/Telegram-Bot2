@@ -13,7 +13,7 @@ bot.onText(/\/start/, (msg) => {
         reply_markup: {
             inline_keyboard: [[{
                 text: 'Obuna bo‘lish',
-                url: `https://t.me/${channelId}`
+                url: `https://t.me/+${channelId}`
             }]]
         }
     });
