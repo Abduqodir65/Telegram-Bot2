@@ -1,6 +1,7 @@
+// src/config.js
 require('dotenv').config();
 
 module.exports = {
-    token: process.env.TELEGRAM_TOKEN,
+    botToken: process.env.BOT_TOKEN,
     channelId: process.env.CHANNEL_ID,
 };

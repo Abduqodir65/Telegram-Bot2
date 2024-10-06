@@ -1,96 +1,50 @@
-const TelegramBot = require("node-telegram-bot-api");
-const { token, channelId } = require("./config");
-const { getVideos } = require("./database");
+const { Telegraf, Markup } = require('telegraf');
 
-require("dotenv").config();
+const bot = new Telegraf('7243007965:AAEBnTOdZxJiBkOvYivYQ7oQIjfVAu2OI60');
 
-const bot = new TelegramBot(token, { polling: true });
+const CHANNEL_ID = '@abduqoodiir';
 
-// Foydalanuvchini kutib olish
-bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
 
-    bot.sendMessage(chatId, `Salom ${msg.from.first_name}! Botdan foydalanish uchun quyidagi tugmalardan foydalaning:`, {
-        reply_markup: {
-            keyboard: [
-                [
-                    { text: "Kanalga o'tish" },
-                    { text: "Videolarni ko‘rish" }
-                ]
-            ],
-            resize_keyboard: true,
-            one_time_keyboard: false
-        }
-    });
+// Botga "/start" buyrug'i yuborilganda
+bot.start((ctx) => {
+    ctx.reply(
+        'Assalomu alekum, botga hush kelibsiz! Iltimos, kanalga obuna bo\'ling.',
+        Markup.inlineKeyboard([
+            [Markup.button.url('Obuna bo\'lish', 'https://t.me/abduqoodiir')],
+            [Markup.button.callback('Tekshirish', 'check')]
+        ]).resize()
+    );
 });
 
-// Tugmachalarga javob berish
-bot.on("message", (msg) => {
-    const chatId = msg.chat.id;
+bot.action('check', async (ctx) => {
+    const userId = ctx.from.id; 
 
-    // Kanalga o'tish tugmasi
-    if (msg.text === "Kanalga o'tish") {
-        bot.sendMessage(chatId, "Siz kanalga o'tasiz...", {
-            reply_markup: {
-                inline_keyboard: [[
-                    { text: "Kanalga o'tish", url: `https://t.me/${channelId}` }
-                ]]
-            }
-        });
-    }
+    try {
 
-    // Videolarni ko'rish tugmasi
-    if (msg.text === "Videolarni ko‘rish") {
-        const videos = getVideos();
-
-        // Tugmalarni ikki qator qilib ajratamiz
-        const videoButtons = videos.map((video, index) => {
-            return [{ text: `${index + 1}-dars: ${video.title}`, videoUrl: video.url }];
-        });
-
-        // Orqaga tugmasi
-        videoButtons.push([{ text: "Orqaga" }]);
-
-        bot.sendMessage(chatId, "Videolar ro'yxati:", {
-            reply_markup: {
-                keyboard: videoButtons,
-                resize_keyboard: true,
-                one_time_keyboard: false
-            }
-        });
-    }
-
-    // Dars tugmalari bosilganda video ko'rsatish
-    const videos = getVideos(); // Videolar ro'yxatini olish
-    videos.forEach((video, index) => {
-        if (msg.text === `${index + 1}-dars: ${video.title}`) {
-            bot.sendMessage(chatId, `Bu yerda ${video.title} video darsi:\n${video.url}`, {
+        const chatMember = await ctx.telegram.getChatMember(CHANNEL_ID, userId);
+        if (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator') {
+            ctx.reply('Siz kanalga obuna bo\'lgansiz! Iltimos, quyidagi tugmalardan birini tanlang:', {
                 reply_markup: {
                     keyboard: [
-                        [
-                            { text: "Orqaga" }
-                        ]
+                        [{ text: 'Darsliklarni Ko\'rish', callback_data: 'view_lessons' }],
+                        [{ text: 'Kanalga O\'tish', url: 'https://t.me/abduqoodiir' }],
+                        [{ text: 'Ilovani Yuklab Olish', callback_data: 'download_app' }]
                     ],
                     resize_keyboard: true,
                     one_time_keyboard: false
                 }
             });
+        } else {
+            ctx.reply('Iltimos, kanalga obuna bo\'ling.');
         }
-    });
-
-    // Orqaga tugmasi
-    if (msg.text === "Orqaga") {
-        bot.sendMessage(chatId, `Salom ${msg.from.first_name}! Botdan foydalanish uchun quyidagi tugmalardan foydalaning:`, {
-            reply_markup: {
-                keyboard: [
-                    [
-                        { text: "Kanalga o'tish" },
-                        { text: "Videolarni ko‘rish" }
-                    ]
-                ],
-                resize_keyboard: true,
-                one_time_keyboard: false
-            }
-        });
+    } catch (error) {
+        ctx.reply('Xatolik yuz berdi. Iltimos, keyinroq yana urinib ko\'ring.');
     }
+});
+
+// Botni ishga tushirish
+bot.launch().then(() => {
+    console.log('Bot ishga tushdi');
+}).catch((error) => {
+    console.error('Botni ishga tushirishda xatolik:', error);
 });
