@@ -44,12 +44,12 @@ bot.on("message", (msg) => {
         const videos = getVideos();
 
         // Tugmalarni ikki qator qilib ajratamiz
-        const videoButtons = videos.map(video => {
-            return [{ text: video.title }];
+        const videoButtons = videos.map((video, index) => {
+            return [{ text: `${index + 1}-dars: ${video.title}`, videoUrl: video.url }];
         });
 
         // Orqaga tugmasi
-        videoButtons.push([{ text: "Orqaga", resize_keyboard: true, one_time_keyboard: false }]);
+        videoButtons.push([{ text: "Orqaga" }]);
 
         bot.sendMessage(chatId, "Videolar ro'yxati:", {
             reply_markup: {
@@ -59,6 +59,24 @@ bot.on("message", (msg) => {
             }
         });
     }
+
+    // Dars tugmalari bosilganda video ko'rsatish
+    const videos = getVideos(); // Videolar ro'yxatini olish
+    videos.forEach((video, index) => {
+        if (msg.text === `${index + 1}-dars: ${video.title}`) {
+            bot.sendMessage(chatId, `Bu yerda ${video.title} video darsi:\n${video.url}`, {
+                reply_markup: {
+                    keyboard: [
+                        [
+                            { text: "Orqaga" }
+                        ]
+                    ],
+                    resize_keyboard: true,
+                    one_time_keyboard: false
+                }
+            });
+        }
+    });
 
     // Orqaga tugmasi
     if (msg.text === "Orqaga") {
